@@ -7,6 +7,7 @@ use App\Models\Customer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class CustomerController extends Controller
 {
@@ -15,7 +16,9 @@ class CustomerController extends Controller
      */
     public function index()
     {
-        return view('customers.index');
+
+        $customers = Customer::all();
+        return view('customers.index', compact('customers'));
     }
 
     /**
@@ -23,32 +26,52 @@ class CustomerController extends Controller
      */
     public function create()
     {
-       return view('customers.create');
-    }
 
+        return view('customers.create');
+    }
     /**
      * Store a newly created resource in storage.
      */
     public function store(CustomerRequest $request)
     {
-        $validatedData =  $request->validated();
+        Log::info('Starting customer creation');
 
-        // dd($validatedData);
+        try {
+            $validatedData = $request->validated();
+            Log::info('Validation passed', $validatedData);
 
-        //handle uploaded images
-        if($request->hasFile('image')){
-             
+            if ($request->hasFile('image')) {
 
-        //    if (!File::exists(public_path('uploads'))) {
-        //     File::makeDirectory(public_path('uploads'), 0755, true);
-        //      }
-            $image= $request->file('image');
-            $filename  = Carbon::now()->format('Y-m-d_H-i-s') . '_' . uniqid() . '.' .$image->getClientOriginalExtension();
-            $filePath = 'uploads/'.$filename; 
-            $image->move(public_path('uploads'),$filename);
+                $uploadsPath = public_path('uploads');
+
+                if (!File::exists($uploadsPath)) {
+                    File::makeDirectory($uploadsPath, 0777, true);
+                }
+
+                $image = $request->file('image');
+                $filename = Carbon::now()->format('Y-m-d_His') . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+
+                $image->move($uploadsPath, $filename);
+                Log::info('Image uploaded: ' . $filename);
+
+                $validatedData['image'] = $filename;
+            }
+
+            $customer = Customer::create($validatedData);
+            Log::info('Customer created', ['id' => $customer->id]);
+
+            return redirect()->route('customers.index')
+                ->with('success', 'Customer created successfully!');
+        } catch (\Exception $e) {
+            Log::error('Customer creation failed', [
+                'message' => $e->getMessage(),
+                // 'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to create customer'])
+                ->withInput($request->except('image'));
         }
-
-        Customer::create(array_merge($validatedData,["image"=> $filename]));
     }
 
     /**
@@ -62,9 +85,14 @@ class CustomerController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Customer $customer)
     {
-        //
+        ///retreive the customer details
+
+        // dd($customer);
+        return view('customers.edit',compact(
+            'customer'
+        ));
     }
 
     /**

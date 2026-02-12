@@ -12,6 +12,7 @@ class Customer extends Model
         'phone',
         'last_name',
         'image',
-        'bank_account_number'
+        'bank_account_number',
+        'about'
     ];
 }

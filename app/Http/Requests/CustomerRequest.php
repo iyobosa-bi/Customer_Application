@@ -22,13 +22,14 @@ class CustomerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "image"=>["nullable","max:2048","mimes:png,jpg"],
             "email"=>["required","email"],
             "first_name"=>["required","string","max:255"],
             "last_name"=> ["required","string","max:255"],
             "phone"=>["required","string"],
             "bank_account_number"=>["required","numeric"],
-            "about"=>["nullable","string"]
+            "about"=>["nullable","string"],
+            'image' => ['nullable', 'file', 'image', 'max:2048'] // 
+
         ];
     }
 }
