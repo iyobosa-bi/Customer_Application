@@ -14,10 +14,16 @@ class CustomerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
 
-        $customers = Customer::all();
+        $searchInput =  $request->input('search');
+        // $customers = Customer::all();
+        $customers =  Customer::when($searchInput, function ($query) use ($request) {
+            $query->where('first_name', 'LIKE', "%$request->search%")->orWhere('last_name', 'LIKE', "%$request->search%");
+        })->orderBy('id', $request->has('order') && $request->order == "asc"?"ASC":"DESC")->get();
+
+        // ds($customers);
         return view('customers.index', compact('customers'));
     }
 
@@ -34,7 +40,7 @@ class CustomerController extends Controller
      */
     public function store(CustomerRequest $request)
     {
-        ds($request);
+        // ds($request);
         Log::info('Starting customer creation');
 
         try {
@@ -61,7 +67,7 @@ class CustomerController extends Controller
             $customer = Customer::create($validatedData);
             Log::info('Customer created', ['id' => $customer->id]);
 
-            ds($validatedData);
+            // ds($validatedData);
 
             return redirect()->route('customers.index')
                 ->with('success', 'Customer created successfully!');
@@ -80,10 +86,10 @@ class CustomerController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show( Customer $customer)
+    public function show(Customer $customer)
     {
         ds($customer);
-        return  view ('customers.show',compact('customer'));
+        return  view('customers.show', compact('customer'));
     }
 
     /**
@@ -147,23 +153,21 @@ class CustomerController extends Controller
     {
 
         //handle the deletion of the image if it exists
-        if($customer->image){
+        if ($customer->image) {
             // dd(public_path('uploads/'.$customer->image));
-            $fullFilePath =  str_replace(['/', '\\'],DIRECTORY_SEPARATOR,public_path('uploads/'.$customer->image));
+            $fullFilePath =  str_replace(['/', '\\'], DIRECTORY_SEPARATOR, public_path('uploads/' . $customer->image));
             // dd($fullFilePath);
-            if(File::exists($fullFilePath)){
+            if (File::exists($fullFilePath)) {
                 File::delete($fullFilePath);
             }
 
-            $storedDeleteInfo=  $customer->delete();
+            $storedDeleteInfo =  $customer->delete();
 
-            if(!$storedDeleteInfo){
+            if (!$storedDeleteInfo) {
                 return redirect()->route('customers.index')->with('error', 'Failed to delete customer');
             }
 
-    
             return redirect()->route('customers.index')->with('success', 'Customer deleted successfully');
         }
-
     }
 }
