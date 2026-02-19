@@ -143,8 +143,27 @@ class CustomerController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Customer $customer)
     {
-        //
+
+        //handle the deletion of the image if it exists
+        if($customer->image){
+            // dd(public_path('uploads/'.$customer->image));
+            $fullFilePath =  str_replace(['/', '\\'],DIRECTORY_SEPARATOR,public_path('uploads/'.$customer->image));
+            // dd($fullFilePath);
+            if(File::exists($fullFilePath)){
+                File::delete($fullFilePath);
+            }
+
+            $storedDeleteInfo=  $customer->delete();
+
+            if(!$storedDeleteInfo){
+                return redirect()->route('customers.index')->with('error', 'Failed to delete customer');
+            }
+
+    
+            return redirect()->route('customers.index')->with('success', 'Customer deleted successfully');
+        }
+
     }
 }

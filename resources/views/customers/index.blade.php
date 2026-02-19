@@ -66,7 +66,7 @@
                                 <a href="{{ route('customers.show',$customer->id) }}" style="color: #2c2c2c;" class="ms-1 me-1"><i
                                         class="far fa-eye"></i></a>
 
-                                <a href="javascript:;" onclick="confirm('Are you sure you want to delete this item?'); $('.form-{{ $customer->id }}').submit();" style="color: #2c2c2c;" class="ms-1 me-1"><i
+                                <a href="javascript:;" onclick="if(confirm('Are you sure you want to delete this item?')){$('.form-{{ $customer->id }}').submit();}else{return false;}" style="color: #2c2c2c;" class="ms-1 me-1"><i
                                         class="fas fa-trash-alt"></i></a>
                                 <form action="{{ route('customers.destroy', $customer->id) }}" method="POST" class="form-{{ $customer->id }}">
                                     @csrf
