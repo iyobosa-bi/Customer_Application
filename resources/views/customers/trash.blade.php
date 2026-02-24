@@ -8,11 +8,11 @@
                 <div class="card-header">
                     <div class="row">
                         <div class="col-md-2">
-                            <a href="{{ route('customers.create') }}" class="btn"
-                                style="background-color: #4643d3; color: white;"><i class="fas fa-plus"></i> Create
-                                Customer</a>
+                            <a href="{{ route('customers.index') }}" class="btn btn-dark"
+                                style="background-color: #4643d3; color: white;"><i class="fas fa-arrow-left"></i>
+                                Back</a>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-8">
                             <form action="{{ route('customers.index') }}" method="GET">
                                 <div class="input-group mb-3">
                                     <input type="text" class="form-control" placeholder="Search anything..."
@@ -34,10 +34,10 @@
                             </form>
 
                         </div>
-                         <div class="col-md-2">
+                        {{-- <div class="col-md-2">
                            <a href="{{ route('customers.trash') }}" class="btn btn-dark ms-24"
                                 ><i class="fas fa-trash-alt"></i> Trash</a>
-                        </div>
+                        </div> --}}
                     </div>
 
                 </div>

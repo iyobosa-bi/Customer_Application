@@ -6,6 +6,7 @@ use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
@@ -18,11 +19,38 @@ class CustomerController extends Controller
     {
 
         $searchInput =  $request->input('search');
+        $orderDirection = $request->has('order') && $request->order == "asc" ? "ASC" : "DESC";
+        DB::enableQueryLog();
         // $customers = Customer::all();
-        $customers =  Customer::when($searchInput, function ($query) use ($request) {
-            $query->where('first_name', 'LIKE', "%$request->search%")->orWhere('last_name', 'LIKE', "%$request->search%");
-        })->orderBy('id', $request->has('order') && $request->order == "asc"?"ASC":"DESC")->get();
+        ds($searchInput);
 
+        // $customers =  Customer::when($searchInput, function ($query) use ($searchInput) {
+        //     $query->where('first_name', 'LIKE', "%{$searchInput}%")->orWhere('last_name', 'LIKE', "%{$searchInput}%");
+        // })->orderBy('id', $orderDirection)->get();
+
+        $customers = Customer::query()
+            ->when($searchInput, function ($query) use ($searchInput) {
+                $query->where(function ($q) use ($searchInput) {
+                    $q->where('first_name', 'LIKE', "%{$searchInput}%")
+                        ->orWhere('last_name', 'LIKE', "%{$searchInput}%");
+                });
+            })
+            ->orderBy('id', $orderDirection)
+            ->paginate(15); // Use pagination instead of get()
+
+        // $customers = Customer::query()
+        //     ->when($searchInput, function ($query) use ($searchInput) {
+        //         $query->where(function ($q) use ($searchInput) {
+        //             $q->where('first_name', 'LIKE', "%{$searchInput}%")
+        //                 ->orWhere('last_name', 'LIKE', "%{$searchInput}%");
+        //         });
+        //     })
+        //     ->orderBy('id', $orderDirection)
+        //     ->get();
+
+
+
+        ds(DB::getQueryLog());
         // ds($customers);
         return view('customers.index', compact('customers'));
     }
@@ -112,13 +140,12 @@ class CustomerController extends Controller
         $validatedRequest =  $request->validated();
 
         //get the instance of the passed customer
-
         $customer =  Customer::findOrFail($id);
 
         // dd($filePath);
         if ($request->hasFile('image')) {
 
-            if ($customer->image) {
+            if ($customer->image){
 
                 $filePath = public_path('uploads/' . $customer->image);
                 ds($filePath);
@@ -169,5 +196,45 @@ class CustomerController extends Controller
 
             return redirect()->route('customers.index')->with('success', 'Customer deleted successfully');
         }
+    }
+
+    public function trash(Request $request)
+    {
+        //  dd('I am here');
+       $searchInput =  $request->input('search');
+        $orderDirection = $request->has('order') && $request->order == "asc" ? "ASC" : "DESC";
+        DB::enableQueryLog();
+        // $customers = Customer::all();
+        ds($searchInput);
+
+        // $customers =  Customer::when($searchInput, function ($query) use ($searchInput) {
+        //     $query->where('first_name', 'LIKE', "%{$searchInput}%")->orWhere('last_name', 'LIKE', "%{$searchInput}%");
+        // })->orderBy('id', $orderDirection)->get();
+
+        $customers = Customer::query()
+            ->when($searchInput, function ($query) use ($searchInput) {
+                $query->where(function ($q) use ($searchInput) {
+                    $q->where('first_name', 'LIKE', "%{$searchInput}%")
+                        ->orWhere('last_name', 'LIKE', "%{$searchInput}%");
+                });
+            })->onlyTrashed()
+            ->orderBy('id', $orderDirection)->paginate('15');
+            // Use paginationinstead of get()
+
+        // $customers = Customer::query()
+        //     ->when($searchInput, function ($query) use ($searchInput) {
+        //         $query->where(function ($q) use ($searchInput) {
+        //             $q->where('first_name', 'LIKE', "%{$searchInput}%")
+        //                 ->orWhere('last_name', 'LIKE', "%{$searchInput}%");
+        //         });
+        //     })
+        //     ->orderBy('id', $orderDirection)
+        //     ->get();
+
+
+
+        ds(DB::getQueryLog());
+        // ds($customers);
+        return view('customers.trash', compact('customers'));
     }
 }

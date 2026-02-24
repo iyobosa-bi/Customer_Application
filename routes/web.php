@@ -8,4 +8,5 @@ use Illuminate\Support\Facades\Route;
 // });
 
 
+Route::get('/customers/trash',[CustomerController::class,'trash'])->name('customers.trash');
 Route::resource('customers',CustomerController::class);
