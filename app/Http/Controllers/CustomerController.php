@@ -145,7 +145,7 @@ class CustomerController extends Controller
         // dd($filePath);
         if ($request->hasFile('image')) {
 
-            if ($customer->image){
+            if ($customer->image) {
 
                 $filePath = public_path('uploads/' . $customer->image);
                 ds($filePath);
@@ -178,16 +178,15 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer)
     {
-
         //handle the deletion of the image if it exists
         if ($customer->image) {
             // dd(public_path('uploads/'.$customer->image));
             $fullFilePath =  str_replace(['/', '\\'], DIRECTORY_SEPARATOR, public_path('uploads/' . $customer->image));
             // dd($fullFilePath);
             if (File::exists($fullFilePath)) {
-                File::delete($fullFilePath);
+                // File::delete($fullFilePath);
             }
-
+        }
             $storedDeleteInfo =  $customer->delete();
 
             if (!$storedDeleteInfo) {
@@ -195,13 +194,13 @@ class CustomerController extends Controller
             }
 
             return redirect()->route('customers.index')->with('success', 'Customer deleted successfully');
-        }
+
     }
 
     public function trash(Request $request)
     {
         //  dd('I am here');
-       $searchInput =  $request->input('search');
+        $searchInput =  $request->input('search');
         $orderDirection = $request->has('order') && $request->order == "asc" ? "ASC" : "DESC";
         DB::enableQueryLog();
         // $customers = Customer::all();
@@ -219,22 +218,39 @@ class CustomerController extends Controller
                 });
             })->onlyTrashed()
             ->orderBy('id', $orderDirection)->paginate('15');
-            // Use paginationinstead of get()
-
-        // $customers = Customer::query()
-        //     ->when($searchInput, function ($query) use ($searchInput) {
-        //         $query->where(function ($q) use ($searchInput) {
-        //             $q->where('first_name', 'LIKE', "%{$searchInput}%")
-        //                 ->orWhere('last_name', 'LIKE', "%{$searchInput}%");
-        //         });
-        //     })
-        //     ->orderBy('id', $orderDirection)
-        //     ->get();
-
-
+        // Use paginationinstead of get()
 
         ds(DB::getQueryLog());
         // ds($customers);
         return view('customers.trash', compact('customers'));
+    }
+
+    public function restore(int $id)
+    {
+        $customer = Customer::onlyTrashed()->findOrFail($id);
+
+        // dd($customer);
+
+        if (!$customer) {
+                    abort(403);
+        }
+         $customer->restore();
+        return redirect()->back()->with('success', 'Customer restored successfully');
+
+
+    }
+
+    public function forceDelete(int $id){
+
+         $customer = Customer::onlyTrashed()->findOrFail($id);
+
+        // dd($customer);
+
+        if (!$customer) {
+            abort(403);
+        }
+         $customer->forceDelete();
+
+        return redirect()->back()->with('success', 'Customer Deleted Permanently');
     }
 }

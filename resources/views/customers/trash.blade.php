@@ -3,7 +3,7 @@
 @section('content')
     <div class="row justify-content-center mt-5">
         <div class="col-md-8">
-            <h3>Customers</h3>
+            <h3>Trashed Customers</h3>
             <div class="card">
                 <div class="card-header">
                     <div class="row">
@@ -67,16 +67,14 @@
                                     <td>{{ $customer->bank_account_number }}</td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <a href="{{ route('customers.edit', $customer->id) }}" style="color: #2c2c2c;"
-                                                class="ms-1 me-1"><i class="far fa-edit"></i></a>
-                                            <a href="{{ route('customers.show', $customer->id) }}" style="color: #2c2c2c;"
-                                                class="ms-1 me-1"><i class="far fa-eye"></i></a>
+                                            <a href="{{ route('customers.restore', $customer->id) }}"
+                                                style="color: #2c2c2c;" class="ms-1 me-1"><i class="fas fa-redo"></i></a>
 
                                             <a href="javascript:;"
-                                                onclick="if(confirm('Are you sure you want to delete this item?')){$('.form-{{ $customer->id }}').submit();}else{return false;}"
+                                                onclick="if(confirm('Are you sure you want to Finally delete this item?')){$('.form-{{ $customer->id }}').submit();}else{return false;}"
                                                 style="color: #2c2c2c;" class="ms-1 me-1"><i
                                                     class="fas fa-trash-alt"></i></a>
-                                            <form action="{{ route('customers.destroy', $customer->id) }}" method="POST"
+                                            <form action="{{ route('customers.forcedestroy', $customer->id) }}" method="POST"
                                                 class="form-{{ $customer->id }}">
                                                 @csrf
                                                 @method('DELETE')
