@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CustomerRequest;
+use App\Mail\SendMail;
 use App\Models\Customer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class CustomerController extends Controller
 {
@@ -119,7 +121,6 @@ class CustomerController extends Controller
         ds($customer);
         return  view('customers.show', compact('customer'));
     }
-
     /**
      * Show the form for editing the specified resource.
      */
@@ -178,6 +179,7 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer)
     {
+
         //handle the deletion of the image if it exists
         if ($customer->image) {
             // dd(public_path('uploads/'.$customer->image));
@@ -187,14 +189,18 @@ class CustomerController extends Controller
                 // File::delete($fullFilePath);
             }
         }
-            $storedDeleteInfo =  $customer->delete();
+        $storedDeleteInfo =  $customer->delete();
 
-            if (!$storedDeleteInfo) {
-                return redirect()->route('customers.index')->with('error', 'Failed to delete customer');
-            }
 
-            return redirect()->route('customers.index')->with('success', 'Customer deleted successfully');
+        if (!$storedDeleteInfo) {
 
+            return redirect()->route('customers.index')->with('error', 'Failed to delete customer');
+        }
+
+        //send a mail to a random address email address that the customer has been trashed
+         Mail::to("blessingisibor24@gmail.com")->send(new SendMail("The customer {$customer->first_name} has been moved to Trash","Trashed Customer"));
+
+        return redirect()->route('customers.index')->with('success', 'Customer deleted successfully');
     }
 
     public function trash(Request $request)
@@ -204,7 +210,7 @@ class CustomerController extends Controller
         $orderDirection = $request->has('order') && $request->order == "asc" ? "ASC" : "DESC";
         DB::enableQueryLog();
         // $customers = Customer::all();
-        ds($searchInput);
+        ds("i am here");
 
         // $customers =  Customer::when($searchInput, function ($query) use ($searchInput) {
         //     $query->where('first_name', 'LIKE', "%{$searchInput}%")->orWhere('last_name', 'LIKE', "%{$searchInput}%");
@@ -232,24 +238,23 @@ class CustomerController extends Controller
         // dd($customer);
 
         if (!$customer) {
-                    abort(403);
+            abort(403);
         }
-         $customer->restore();
+        $customer->restore();
         return redirect()->back()->with('success', 'Customer restored successfully');
-
-
     }
 
-    public function forceDelete(int $id){
+    public function forceDelete(int $id)
+    {
 
-         $customer = Customer::onlyTrashed()->findOrFail($id);
+        $customer = Customer::onlyTrashed()->findOrFail($id);
 
         // dd($customer);
 
         if (!$customer) {
             abort(403);
         }
-         $customer->forceDelete();
+        $customer->forceDelete();
 
         return redirect()->back()->with('success', 'Customer Deleted Permanently');
     }

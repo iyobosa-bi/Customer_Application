@@ -15,6 +15,7 @@ Route::get('/customers/trash',[CustomerController::class,'trash'])->name('custom
 Route::get('/customers/{customer}/restore', [CustomerController::class,'restore'])->name(name: 'customers.restore');
 Route::delete('/customers/{customer}/forceDelete', [CustomerController::class,'forceDelete'])->name(name: 'customers.forcedestroy');
 
+Route::get('/',[CustomerController::class,'index']);
 Route::resource('customers',CustomerController::class);
 
 
