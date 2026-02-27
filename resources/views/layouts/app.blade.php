@@ -7,12 +7,14 @@
     <title>Customers</title>
     <link rel="stylesheet" href="{{ asset('./assets/css/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ asset('./assets/css/fontawesome.min.css') }}">
+    <link rel="icon" href="{{ asset('customer_favicon.png') }}" type="image/x-icon">
+
     {{-- <link rel="stylesheet" href="style.css"> --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 </head>
 <body>
-    
+
     @yield('content')
 <script src="{{ asset('./assets/js/jquery.js') }}"></script>
 <script src="{{ asset('./assets/js/bootstrap.bundle.js') }}"></script>
